@@ -38,3 +38,21 @@
 - Errors
 - Panic & Recovery
 
+# Day-01
+## Concurrency
+- Builtin Scheduler
+- Concurrent Operations (independent execution paths) are reptresented as "Goroutines"
+- Goroutines are cheak (~2KB) compared to OS Threads (~2MB)
+- Language Support
+    - "go" keyword, "chan" data type, "<-" operator, "range" & "select-case" constructs
+- SDK support
+    - "sync" package
+    - "sync/atomic" packages
+
+### sync.WaitGroup
+- Semaphore based counter
+- Has the ability to block the execution of a function until the counter becomes 0
+
+
+
+
