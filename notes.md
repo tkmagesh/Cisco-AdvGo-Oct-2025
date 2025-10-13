@@ -53,6 +53,19 @@
 - Semaphore based counter
 - Has the ability to block the execution of a function until the counter becomes 0
 
+### Detecting Data Race
+```shell
+go run --race <application>
+
+# OR
+
+go build --race <application>
+
+# OR
+
+go test --race <application>
+```
+
 
 
 
