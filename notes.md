@@ -66,6 +66,45 @@ go build --race <application>
 go test --race <application>
 ```
 
+### Communication using Channels
+- Share memory by communicating
+
+#### Declaration
+```go
+var <ch_var_name> chan <data_type>
+// ex:
+var ch chan int
+```
+
+#### Initialization
+```go
+<ch_var_name> = make(chan <data_type>)
+// ex:
+ch = make(chan int)
+```
+#### Declaration & Inialization
+```go
+var ch chan int = make(chan int)
+// OR
+var ch = make(chan int)
+// OR
+ch := make(chan int)
+```
+#### Send Operation 
+```go
+<ch_var_name> <- <data>
+// ex:
+ch <- 100
+```
+
+#### Receive Operation
+```go
+<- <ch_var_name>
+// ex:
+<- ch
+```
+#### Channel Behaviors
+![image](./images/channel-behaviors.png)
 
 
 
