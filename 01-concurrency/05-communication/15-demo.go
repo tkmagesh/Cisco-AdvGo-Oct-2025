@@ -27,8 +27,10 @@ func main() {
 	*/
 
 	ch := make(chan int)
-	ch <- 100
 	// make the following as a goroutine
-	data := <-ch
-	fmt.Println(data)
+	go func() {
+		data := <-ch
+		fmt.Println(data)
+	}()
+	ch <- 100
 }
