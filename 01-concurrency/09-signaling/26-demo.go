@@ -9,8 +9,9 @@ import (
 // share memory by communicating (replacing "communicate by sharing memory")
 
 func main() {
-	wg := &sync.WaitGroup{}
+
 	stopCh := time.After(5 * time.Second)
+	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go genNos(wg, stopCh)
 	wg.Wait()
