@@ -115,3 +115,18 @@ ch <- 100
     - `context.WithTimeout()` & `context.WithDeadline()` - facilitates 'time' based cancellation
     - `context.WithValue()` - used for sharing data across context hierarchies
 
+
+## Database Programming
+### database/sql package
+- standard library
+- have to write a lot of mundane code
+### sqlx
+- Open source
+- wrapper on `database/sql`
+- reduces the mundane code
+### sqlc (https://github.com/sqlc-dev/sqlc)
+- Open source
+- use code generation
+### GORM
+- Open source
+- Object-Relational Mapper
