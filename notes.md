@@ -106,5 +106,12 @@ ch <- 100
 #### Channel Behaviors
 ![image](./images/channel-behaviors.png)
 
-
+## Context
+- Designed for "cancel propagation"
+- All context implementations implement "context.Context" interface
+- Factory functions
+    - `context.Background()` - used for the creation of the 'root' context
+    - `context.WithCancel()` - facilitates 'programmatic' cancellation
+    - `context.WithTimeout()` & `context.WithDeadline()` - facilitates 'time' based cancellation
+    - `context.WithValue()` - used for sharing data across context hierarchies
 
