@@ -181,3 +181,43 @@ ch <- 100
 protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/service.proto
 proto
 ```
+
+## Testing
+### gotest tool
+```shell
+go install github.com/rakyll/gotest
+```
+
+### Run the tests
+```shell
+gotest ./... -v
+```
+
+```shell
+gotest -run ^TestIsPrime$ testing-demo/utils -v
+```
+
+```shell
+gotest -run ^TestIsPrime ./... -v
+```
+
+### Code Coverage
+```shell
+go test ./... -coverprofile=cover.out
+go tool cover -html=cover.out
+```
+
+### Mocking
+
+#### Autogenerating mocks (https://vektra.github.io/mockery/)
+install the tool
+```shell
+go install github.com/vektra/mockery/v3@v3.5.5
+```
+
+generate the mocks
+```shell
+mockery
+```
+
+
