@@ -175,3 +175,9 @@ ch <- 100
             the binaries (protoc-gen-go, protoc-gen-go-grpc) must be present in $GOPATH/bin folder
     
 
+#### To Generate proxy and stub
+```shell
+# run the following command in the application folder (07-grpc)
+protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/service.proto
+proto
+```
