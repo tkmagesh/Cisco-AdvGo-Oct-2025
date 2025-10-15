@@ -130,3 +130,24 @@ ch <- 100
 ### GORM
 - Open source
 - Object-Relational Mapper
+
+## GRPC
+### Disadvantages of HTTP 
+- Optimal for Request/Response, not suitable for realtime applications
+- Payload size as the data has to be labeled
+### GRPC
+- Supports the following communication patterns
+    - Request Response (1 request & 1 response)
+    - Client Streaming (multiple requests & 1 response)
+    - Server Streaming (1 request & multiple responses)
+    - Bidirectional Streaming (multiple requests & multiple responses)
+- Payload size is relatively less compared to HTTP, as the contract is shared well in advance between the client and the server
+- Data is serialized & deserialized using "Protocol Buffers"
+- Supported by many popular languages (interoperable between languages)
+- Uses http/2
+
+### Steps
+1. Create a service contract containing the operations contract and data contract in "protocol buffers" syntax
+2. Generate the proxy and stub code
+3. Use the stub to host the service in the server
+4. Use the proxy in client to communicate to the server
