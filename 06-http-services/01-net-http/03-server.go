@@ -24,18 +24,29 @@ var products []Product = []Product{
 	{Id: 103, Name: "Marker", Cost: 50, Category: "Stationary"},
 }
 
+type HandlerFunction func(http.ResponseWriter, *http.Request)
+type MiddlwareFunction func(HandlerFunction) HandlerFunction
+
 type AppServer struct {
-	routes map[string]func(http.ResponseWriter, *http.Request)
+	routes      map[string]HandlerFunction
+	middlewares []MiddlwareFunction
 }
 
 func NewAppServer() *AppServer {
 	return &AppServer{
-		routes: make(map[string]func(http.ResponseWriter, *http.Request)),
+		routes: make(map[string]HandlerFunction),
 	}
 }
 
-func (appServer *AppServer) AddRoute(path string, handlerFn func(http.ResponseWriter, *http.Request)) {
+func (appServer *AppServer) AddRoute(path string, handlerFn HandlerFunction) {
+	for i := len(appServer.middlewares) - 1; i >= 0; i-- {
+		handlerFn = appServer.middlewares[i](handlerFn)
+	}
 	appServer.routes[path] = handlerFn
+}
+
+func (appServer *AppServer) UseMiddleware(middlewareFn MiddlwareFunction) {
+	appServer.middlewares = append(appServer.middlewares, middlewareFn)
 }
 
 // http.Handler interface implementation
@@ -49,7 +60,7 @@ func (appServer *AppServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // application specific
 
-func logMiddleware(handlerFn func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+func logMiddleware(handlerFn HandlerFunction) HandlerFunction {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		defer func() {
@@ -60,7 +71,7 @@ func logMiddleware(handlerFn func(http.ResponseWriter, *http.Request)) func(http
 	}
 }
 
-func timeoutMiddleware(handlerFn func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+func timeoutMiddleware(handlerFn HandlerFunction) HandlerFunction {
 	return func(w http.ResponseWriter, r *http.Request) {
 		timeoutCtx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 		defer cancel()
@@ -71,7 +82,7 @@ func timeoutMiddleware(handlerFn func(http.ResponseWriter, *http.Request)) func(
 	}
 }
 
-func requestIdMiddleware(handlerFn func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+func requestIdMiddleware(handlerFn HandlerFunction) HandlerFunction {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idCtx := context.WithValue(r.Context(), "req-id", guid.New())
 		handlerFn(w, r.WithContext(idCtx))
@@ -118,9 +129,12 @@ func CustomersHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	appServer := NewAppServer()
-	appServer.AddRoute("/", requestIdMiddleware(timeoutMiddleware(logMiddleware(IndexHandler))))
-	appServer.AddRoute("/products", requestIdMiddleware(timeoutMiddleware(logMiddleware(ProductsHandler))))
-	appServer.AddRoute("/customers", requestIdMiddleware(timeoutMiddleware(logMiddleware(CustomersHandler))))
+	appServer.UseMiddleware(requestIdMiddleware)
+	appServer.UseMiddleware(timeoutMiddleware)
+	appServer.UseMiddleware(logMiddleware)
+	appServer.AddRoute("/", IndexHandler)
+	appServer.AddRoute("/products", ProductsHandler)
+	appServer.AddRoute("/customers", CustomersHandler)
 	if err := http.ListenAndServe(":8080", appServer); err != nil {
 		log.Println(err)
 	}
