@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Product struct {
@@ -45,6 +46,7 @@ func (appServer *AppServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // application specific
 
+// Modify the function to log the time taken for processing the request as well
 func logMiddleware(handlerFn func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s - %s\n", r.Method, r.URL.Path)
@@ -53,10 +55,12 @@ func logMiddleware(handlerFn func(http.ResponseWriter, *http.Request)) func(http
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(2 * time.Second)
 	fmt.Fprintln(w, "Hello, World!")
 }
 
 func ProductsHandler(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(3 * time.Second)
 	switch r.Method {
 	case http.MethodGet:
 		if err := json.NewEncoder(w).Encode(products); err != nil {
