@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"math"
 	"net"
 	"time"
 
@@ -58,21 +60,21 @@ func (asi *AppServiceImpl) GeneratePrimes(req *proto.PrimeRequest, serverStream 
 	start := req.GetStart()
 	end := req.GetEnd()
 
-	log.Printf("[AppService.GeneratePrimes] start = %d & end = %d\n", start, end)
+	fmt.Printf("[AppService.GeneratePrimes] start = %d & end = %d\n", start, end)
 
 	for no := start; no <= end; no++ {
 		if isPrime(no) {
 			resp := &proto.PrimeResponse{
 				PrimeNo: no,
 			}
-			log.Printf("[AppService.GeneratePrimes] sending prime no : %d\n", no)
+			fmt.Printf("[AppService.GeneratePrimes] sending prime no : %d\n", no)
 			if err := serverStream.Send(resp); err != nil {
 				log.Fatalln(err)
 			}
 			time.Sleep(500 * time.Millisecond)
 		}
 	}
-	log.Println("[AppService.GeneratePrimes] All the prime numbers are sent!")
+	fmt.Println("[AppService.GeneratePrimes] All the prime numbers are sent!")
 	return nil
 }
 
@@ -83,6 +85,43 @@ func isPrime(no int64) bool {
 		}
 	}
 	return true
+}
+
+func (asi *AppServiceImpl) Aggregate(serverStream proto.AppService_AggregateServer) error {
+	var min, max, count, sum, avg int64
+	min = math.MaxInt64
+	for {
+		req, err := serverStream.Recv()
+		if err == io.EOF {
+			avg = sum / count
+			resp := &proto.AggregateResponse{
+				Min:     min,
+				Max:     max,
+				Sum:     sum,
+				Count:   count,
+				Average: avg,
+			}
+			fmt.Println("[AppService.Aggregate] sending aggregate response")
+			if err := serverStream.SendAndClose(resp); err != nil {
+				log.Fatalln(err)
+			}
+			return nil
+		}
+		if err != nil {
+			log.Fatalln(err)
+		}
+		no := req.GetNo()
+		fmt.Println("[AppService.Aggregate] received no =", no)
+		if min > no {
+			min = no
+		}
+		if max < no {
+			max = no
+		}
+		count += 1
+		sum += no
+	}
+	return nil
 }
 
 func main() {

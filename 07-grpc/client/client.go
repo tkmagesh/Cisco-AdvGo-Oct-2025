@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/tkmagesh/cisco-advgo-oct-2025/07-grpc/proto"
 	"google.golang.org/grpc"
@@ -22,7 +24,8 @@ func main() {
 	clientPxy := proto.NewAppServiceClient(clientConn)
 	ctx := context.Background()
 	// doRequestResponse(ctx, clientPxy)
-	doServerStreaming(ctx, clientPxy)
+	// doServerStreaming(ctx, clientPxy)
+	doClientStreaming(ctx, clientPxy)
 }
 
 func doRequestResponse(ctx context.Context, clientPxy proto.AppServiceClient) {
@@ -67,5 +70,40 @@ func doServerStreaming(ctx context.Context, clientPxy proto.AppServiceClient) {
 		primeNo := resp.GetPrimeNo()
 		fmt.Printf("[Server Streaming] Prime No : %d\n", primeNo)
 	}
+
+}
+
+func doClientStreaming(ctx context.Context, clientPxy proto.AppServiceClient) {
+	count := rand.Intn(20)
+	fmt.Printf("[Aggreate] : sending %d numbers\n", count)
+
+	clientStream, err := clientPxy.Aggregate(ctx)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for range count {
+		no := rand.Int63n(60)
+		fmt.Printf("[Aggreate] : sending no : %d\n", no)
+		req := &proto.AggregateRequest{
+			No: no,
+		}
+		if err := clientStream.Send(req); err != nil {
+			log.Fatalln(err)
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	fmt.Printf("[Aggreate] : All data sent!\n")
+	resp, err := clientStream.CloseAndRecv()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Printf("[Aggreate] : Received aggregates!\n")
+	fmt.Println("min :", resp.GetMin())
+	fmt.Println("max :", resp.GetMax())
+	fmt.Println("count :", resp.GetCount())
+	fmt.Println("sum :", resp.GetSum())
+	fmt.Println("average :", resp.GetAverage())
 
 }
