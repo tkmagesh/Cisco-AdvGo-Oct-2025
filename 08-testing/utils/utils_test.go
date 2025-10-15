@@ -77,3 +77,10 @@ func TestPrimes(t *testing.T) {
 		})
 	}
 }
+
+// Benchmarking
+func BenchmarkGeneratePrimes(b *testing.B) {
+	for b.Loop() {
+		GeneratePrimes(2, 100)
+	}
+}
