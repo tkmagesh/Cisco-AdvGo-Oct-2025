@@ -44,6 +44,14 @@ func (appServer *AppServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // application specific
+
+func logMiddleware(handlerFn func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s - %s\n", r.Method, r.URL.Path)
+		handlerFn(w, r)
+	}
+}
+
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Hello, World!")
 }
@@ -77,9 +85,9 @@ func CustomersHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	appServer := NewAppServer()
-	appServer.AddRoute("/", IndexHandler)
-	appServer.AddRoute("/products", ProductsHandler)
-	appServer.AddRoute("/customers", CustomersHandler)
+	appServer.AddRoute("/", logMiddleware(IndexHandler))
+	appServer.AddRoute("/products", logMiddleware(ProductsHandler))
+	appServer.AddRoute("/customers", logMiddleware(CustomersHandler))
 	if err := http.ListenAndServe(":8080", appServer); err != nil {
 		log.Println(err)
 	}
