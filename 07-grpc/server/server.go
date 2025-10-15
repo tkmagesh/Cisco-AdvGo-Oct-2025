@@ -54,6 +54,37 @@ func (asi *AppServiceImpl) Add(ctx context.Context, req *proto.AddRequest) (*pro
 	return res, nil
 }
 
+func (asi *AppServiceImpl) GeneratePrimes(req *proto.PrimeRequest, serverStream proto.AppService_GeneratePrimesServer) error {
+	start := req.GetStart()
+	end := req.GetEnd()
+
+	log.Printf("[AppService.GeneratePrimes] start = %d & end = %d\n", start, end)
+
+	for no := start; no <= end; no++ {
+		if isPrime(no) {
+			resp := &proto.PrimeResponse{
+				PrimeNo: no,
+			}
+			log.Printf("[AppService.GeneratePrimes] sending prime no : %d\n", no)
+			if err := serverStream.Send(resp); err != nil {
+				log.Fatalln(err)
+			}
+			time.Sleep(500 * time.Millisecond)
+		}
+	}
+	log.Println("[AppService.GeneratePrimes] All the prime numbers are sent!")
+	return nil
+}
+
+func isPrime(no int64) bool {
+	for i := int64(2); i <= (no / 2); i++ {
+		if no%i == 0 {
+			return false
+		}
+	}
+	return true
+}
+
 func main() {
 	asi := &AppServiceImpl{}
 	listener, err := net.Listen("tcp", ":50051")

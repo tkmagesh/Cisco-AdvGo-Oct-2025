@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 
 	"github.com/tkmagesh/cisco-advgo-oct-2025/07-grpc/proto"
@@ -20,7 +21,8 @@ func main() {
 	}
 	clientPxy := proto.NewAppServiceClient(clientConn)
 	ctx := context.Background()
-	doRequestResponse(ctx, clientPxy)
+	// doRequestResponse(ctx, clientPxy)
+	doServerStreaming(ctx, clientPxy)
 }
 
 func doRequestResponse(ctx context.Context, clientPxy proto.AppServiceClient) {
@@ -41,4 +43,29 @@ func doRequestResponse(ctx context.Context, clientPxy proto.AppServiceClient) {
 		}
 	}
 	fmt.Println("[Add Response] Result :", addRes.GetResult())
+}
+
+func doServerStreaming(ctx context.Context, clientPxy proto.AppServiceClient) {
+	primeReq := &proto.PrimeRequest{
+		Start: 2,
+		End:   100,
+	}
+	fmt.Println("[Server Streaming] Generate Primes - sending request")
+	clientStream, err := clientPxy.GeneratePrimes(ctx, primeReq)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for {
+		resp, err := clientStream.Recv()
+		if err == io.EOF {
+			fmt.Println("[Server Streaming] All the responses received")
+			return
+		}
+		if err != nil {
+			log.Fatalln(err)
+		}
+		primeNo := resp.GetPrimeNo()
+		fmt.Printf("[Server Streaming] Prime No : %d\n", primeNo)
+	}
+
 }
